@@ -5,8 +5,9 @@ from ..util import NIOClient
 class ListAction(Action):
 
     def perform(self):
-        for n in self.args.names:
-            rsp = NIOClient.list(self.args.resource, n, self.args.cmd)
+        for name in self.args.names:
+            rsp = NIOClient.list(self.args.resource, name, 
+                                 self.args.cmd, self.args.filter)
             if rsp is not None and rsp.text:
                 ls_all = not bool(self.args.names[0])
                 self.process(rsp, ls_all)
