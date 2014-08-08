@@ -47,13 +47,3 @@ def creds(s):
         raise ArgumentTypeError(
             "Credentials must be of the form 'username:password'"
         )
-
-def edge(s):
-    try:
-        frm, to = s.split('=>')
-        to = to or None
-        return [frm, to]
-    except:
-        raise ArgumentTypeError(
-            "Link arguments must be of the form 'foo=>bar'"
-        )

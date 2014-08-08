@@ -8,7 +8,6 @@ FIELDS = [
     'type',
     'log_level',
     'auto_start',
-    'sys_metadata',
     'mappings'
 ]
 
