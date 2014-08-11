@@ -1,6 +1,6 @@
 import requests
 from .base import Action
-from ..util import NIOClient
+from ..util import NIOClient, try_int
 
 
 class CommandAction(Action):
@@ -38,11 +38,19 @@ class CommandAction(Action):
 
         for name in command_template:
             _type = command_template[name]['type']
-            result = input(prompt.format(name, _type))
-
-            # we currently only have integer and string params for commands
-            if _type == 'int':
-                result = int(result)
+            if _type == 'dict':
+                result = {}
+                print(prompt.format(name, _type))
+                while 1:
+                    k = input("key: ")
+                    if not k:
+                        break
+                    v = try_int(input("value: "))
+                    result[k] = v
+            else:
+                result = input(prompt.format(name, _type))
+                if _type == 'int':
+                    result = int(result)
 
             data[name] = result
 

@@ -23,9 +23,8 @@ class BuildAction(Action):
                     self._exec.rm_block(self.args.to)
 
             # only make the PUT request if something is changing
-            if self.args.to:
-                service['execution'] = self._exec.pack()
-                NIOClient.build(self.args.name, service)
+            service['execution'] = self._exec.pack()
+            NIOClient.build(self.args.name, service)
 
             self.generate_output(self._exec.to_rows())
 

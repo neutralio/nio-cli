@@ -2,7 +2,8 @@ import sys
 from os.path import expanduser, isfile
 from argparse import ArgumentParser
 from configparser import ConfigParser
-from .actions import ListAction, CommandAction, ConfigAction, BuildAction
+from .actions import ListAction, CommandAction,\
+    ConfigAction, BuildAction, UpdateAction
 from .util import argument, creds, NIOClient
 
 # TODO: 
@@ -46,6 +47,7 @@ def _nio_instance_main():
     list_parser.add_argument('resource', type=str)
     list_parser.add_argument('names', nargs='*', default=[''])
     list_parser.add_argument('--cmd', action='store_true')
+    list_parser.add_argument('--exec', action='store_true')
     list_parser.add_argument('--filter', type=argument, nargs='*')
 
     cmd_parser = subparsers.add_parser('command', aliases=['co'])
@@ -67,6 +69,10 @@ def _nio_instance_main():
     build_parser.add_argument('name', type=str)
     build_parser.add_argument('froms', nargs='*', default=[])
     build_parser.add_argument('to')
+
+    update_parser = subparsers.add_parser('update', aliases=['ld'])
+    update_parser.set_defaults(action=UpdateAction)
+    update_parser.add_argument('block_types', type=str, nargs='+')
 
     args = argparser.parse_args()
 
