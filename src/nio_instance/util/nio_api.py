@@ -20,7 +20,7 @@ class NIOClient(object):
     @classmethod
     def build(cls, name, data):
         return cls.config('services', name, data)
-        
+
     @classmethod
     def config(cls, resource, name, data):
         request = {
@@ -58,6 +58,10 @@ class NIOClient(object):
             'resource': 'shutdown'
         }
         cls._request('GET', request)
+
+    @classmethod
+    def update(cls, block_type):
+        cls.config('blocks_types', block_type, {}) 
 
     @classmethod
     def _request(cls, method, req_info, data=None):
@@ -106,5 +110,5 @@ class NIOClient(object):
         result = '?'
         for p in params:
             result += "{0}&".format(p)
-        return result.rstrip('&')
+        return result.rstrip('&').rstrip('?')
         
