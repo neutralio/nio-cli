@@ -3,14 +3,10 @@ import requests
 import sys
 from prettytable import PrettyTable
 
-FIELDS = [
-    'name',
-    'type',
-    'log_level',
-    'auto_start',
-    'mappings'
-]
-
+FIELDS = {
+    'both': ['name', 'type', 'log_level'],
+    'service': ['auto_start', 'mappings']
+}
 
 class Action(object):
     def __init__(self, args):
@@ -20,7 +16,7 @@ class Action(object):
         if rsp is not None and rsp.text:
             return rsp.json()
         else:
-            return {}
+            return None
 
     def _format_line(self, row):
         return ' '.join([str(i) for i in row])
@@ -56,9 +52,11 @@ class Action(object):
                 
         return rows
 
-    def _gen_list(self, data):
-        eg = list(data.values())[0]
-        header = keys = [k for k in FIELDS if k in eg]
+    def _gen_list(self, data, services=False):
+        fields = FIELDS.get('both')
+        if services:
+            fields.extend(FIELDS.get('service'))
+        header = keys = [k for k in fields]
         align = [(header[0],'l')]
         rows = [align, header]
         for k in data.keys():

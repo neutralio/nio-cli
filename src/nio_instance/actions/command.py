@@ -12,10 +12,10 @@ class CommandAction(Action):
 
     @property
     def params(self):
-        if self.args.interactive:
-            return self._collect_params()
+        if self.args.auto:
+            return {a[0]: a[1] for a in self.args.args}            
         else:
-            return {a[0]: a[1] for a in self.args.args}
+            return self._collect_params()
 
     def perform(self):
         if self.args.command == 'shutdown':
@@ -28,7 +28,11 @@ class CommandAction(Action):
                                     self.args.service,
                                     self.args.block,
                                     self.params)
-            print(self.process(rsp))
+
+            # only print nonempty response bodies
+            rsp_body = self.process(rsp)
+            if rsp_body is not None:
+                print(rsp_body)
 
     def _collect_params(self):
         data = {}

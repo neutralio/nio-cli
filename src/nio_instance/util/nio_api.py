@@ -75,6 +75,7 @@ class NIOClient(object):
                   "(username: {0})".format(cls.auth[0]),
                   file=sys.stderr)
         elif status >= 300:
+            print(rsp.text)
             print("NIOClient: NIO returned status {0}".format(status), 
                   file=sys.stderr)
             return None

@@ -25,7 +25,7 @@ class ListAction(Action):
         if self.args.names[0]:
             if self.args.cmd:
                 return self._gen_command_list(data)
-            elif self.args.exec:
+            elif self.args.exec and self.args.resource == 'services':
                 return Execution(data['execution']).to_rows()
             else:
                 return self._gen_spec(data)

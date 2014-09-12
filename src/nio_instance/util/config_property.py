@@ -78,7 +78,10 @@ class ConfigProperty(object):
             result = self.default
             print('Using current value:', result)
         elif self._type == 'int':
-            result = int(result)
+            try:
+                result = int(result)
+            except:
+                pass
         elif self._type == 'bool':
             result = True if re.match(r'[tT]', result) else False
         return result

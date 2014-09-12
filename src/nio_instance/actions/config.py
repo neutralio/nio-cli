@@ -26,10 +26,12 @@ class ConfigAction(Action):
             cfg_prop = ConfigProperty(prop, prop_detail, curr_val)
             if not cfg_prop._detail.get('readonly', False):
                 cfg_prop.process()
-            data[prop] = cfg_prop.value
+            val = cfg_prop.value
+            if val is not None:
+                data[prop] = val
 
         rsp = NIOClient.config(self.args.resource, self.args.name, data)
-        new_data = self.process(rsp)
+        new_data = self.process(rsp) or data
         rows = self._gen_spec(new_data)
         self.generate_output(rows)
 

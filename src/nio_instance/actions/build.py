@@ -1,3 +1,4 @@
+from sys import stderr
 from .base import Action
 from ..util import Execution, NIOClient
 
@@ -10,7 +11,7 @@ class BuildAction(Action):
         try:
             service = NIOClient.list('services', self.args.name).json()
         except Exception as e:
-            print("Invalid service: {0}".format(self.args.name))
+            print("Invalid service: {0}".format(self.args.name), file=stderr)
         else:
             self._exec = Execution(service['execution'])
         

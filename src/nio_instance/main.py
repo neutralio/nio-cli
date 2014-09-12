@@ -55,7 +55,7 @@ def _nio_instance_main():
     cmd_parser.add_argument('command', type=str)
     cmd_parser.add_argument('service', type=str)
     cmd_parser.add_argument('block', nargs='?', default='')
-    cmd_parser.add_argument('--interactive', '-i', action='store_true')
+    cmd_parser.add_argument('--auto', '-a', action='store_true')
     cmd_parser.add_argument('--args', type=argument, nargs='*', default=[])
 
     config_parser = subparsers.add_parser('config', aliases=['cfg'])
@@ -70,7 +70,7 @@ def _nio_instance_main():
     build_parser.add_argument('froms', nargs='*', default=[])
     build_parser.add_argument('to')
 
-    update_parser = subparsers.add_parser('update', aliases=['ld'])
+    update_parser = subparsers.add_parser('update')
     update_parser.set_defaults(action=UpdateAction)
     update_parser.add_argument('block_types', type=str, nargs='+')
 
@@ -83,8 +83,6 @@ def _nio_instance_main():
     try:
         action.perform()
     except Exception as e:
-        from traceback import format_exc
-        print(format_exc())
         print("Error while executing nio action {0}".format(
             type(action).__name__), file=sys.stderr)
         print(type(e).__name__, e, file=sys.stderr)
