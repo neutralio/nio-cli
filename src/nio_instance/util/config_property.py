@@ -33,28 +33,33 @@ class ConfigProperty(object):
  
     def process(self, prompt="\n{0} ({1}): "):
         result = ''
-        # TODO: define semantics for adding to lists
+
+        # handle a list property by looking at the template
         if self._type == 'list':
-            return result
+            result = self._current
+            obj = self._process_object(None, prompt)
+            while obj is not None:
+                result.append(obj)
+                obj = self._process_object(None, prompt, "Add element")
 
         # handle an object property gracefully
         elif self._type == 'object':
-            result = self._process_sub_props(self._current, prompt)
+            result = self._process_object(self._current, prompt)
         elif self._type == 'timedelta':
-            result = self._process_sub_props(self.default, prompt)
+            result = self._process_object(self.default, prompt)
         else:
             result = self._process_field(prompt)
 
         self._current = result
 
-    def _process_sub_props(self, current, prompt):
+    def _process_object(self, current, prompt, opt_prompt="Update"):
         result = {}
         
         print(prompt.format(self.name, self._type))
-        update = input("Update?[y/n] ")
+        update = input("{}?[y/n] ".format(opt_prompt))
         
         if re.match(r'[nN]', update) is not None:
-            result = self._current
+            result = current
         else:
 
             # process each of the subproperties

@@ -38,7 +38,7 @@ class CommandAction(Action):
         data = {}
         prompt="{0} ({1}): "
         commands = NIOClient.list(self.resource, self.name, True).json()
-        command_template = commands.get(self.args.command, {}).get('params')
+        command_template = commands.get(self.args.command, {}).get('params', [])
 
         for name in command_template:
             _type = command_template[name]['type']

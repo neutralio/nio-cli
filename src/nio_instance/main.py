@@ -83,6 +83,8 @@ def _nio_instance_main():
     try:
         action.perform()
     except Exception as e:
+        # from traceback import format_exc
+        # print(format_exc())
         print("Error while executing nio action {0}".format(
             type(action).__name__), file=sys.stderr)
         print(type(e).__name__, e, file=sys.stderr)
