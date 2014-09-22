@@ -9,7 +9,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'nio-instance=nio_instance.main:_nio_instance_main'
+            'nio=nio_instance.main:_nio_instance_main'
         ]
     },
     author="Oren Leiman",

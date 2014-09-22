@@ -20,7 +20,7 @@ class NIOClient(object):
     @classmethod
     def build(cls, name, data):
         return cls.config('services', name, data)
-        
+
     @classmethod
     def config(cls, resource, name, data):
         request = {
@@ -43,11 +43,12 @@ class NIOClient(object):
         return cls._request('POST', request, data)
 
     @classmethod
-    def list(cls, resource, name='', cmd_ls=False):
+    def list(cls, resource, name='', cmd_ls=False, _filter=[]):
         request = {
             'resource': resource,
             'name': name,
-            'cmd': 'commands' if cmd_ls else None
+            'cmd': 'commands' if cmd_ls else None,
+            'params': _filter
         }
         return cls._request('GET', request)
 
@@ -57,6 +58,10 @@ class NIOClient(object):
             'resource': 'shutdown'
         }
         cls._request('GET', request)
+
+    @classmethod
+    def update(cls, block_type):
+        cls.config('blocks_types', block_type, {}) 
 
     @classmethod
     def _request(cls, method, req_info, data=None):
@@ -69,7 +74,8 @@ class NIOClient(object):
             print("NIOCLient: Insufficient Permissions "
                   "(username: {0})".format(cls.auth[0]),
                   file=sys.stderr)
-        elif status != 200:
+        elif status >= 300:
+            print(rsp.text)
             print("NIOClient: NIO returned status {0}".format(status), 
                   file=sys.stderr)
             return None
@@ -78,8 +84,8 @@ class NIOClient(object):
                   "was processed successfully")
         return rsp
 
-    @staticmethod
-    def _construct_endpoint(**kwargs):
+    @classmethod
+    def _construct_endpoint(cls, **kwargs):
         ''' Build the endpoint for a NIO api call. In general, NIO endpoints
         take the form <resource>/<name>/<sub_name>.
         
@@ -95,4 +101,15 @@ class NIOClient(object):
         if cmd:
             result += '{0}/'.format(cmd)
 
-        return result.rstrip('/')
+        result = result.rstrip('/')
+        result += cls._param_string(kwargs.get('params') or [])
+ 
+        return result
+
+    @classmethod
+    def _param_string(cls, params):
+        result = '?'
+        for p in params:
+            result += "{0}&".format(p)
+        return result.rstrip('&').rstrip('?')
+        
