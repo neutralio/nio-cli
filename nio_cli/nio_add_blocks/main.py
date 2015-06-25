@@ -118,7 +118,30 @@ class AddProjectAction:
         self.args = args
 
     def perform(self):
+        ''' Clone down the project_template repository
+
+        If the installed version of nio matches a release in the
+        project_template repo, then use that tag.
+        '''
         BlockAdder.add(self.args.project_name, True, self.args.https)
+        version = self._nio_version()
+        print('n.io version: {}'.format(version))
+        if version:
+            try:
+                subprocess.call('cd ./{} && git checkout tags/{}'.format(
+                    self.args.project_name, version), shell=True)
+            except Exception as e:
+                # This release doesn't have a version
+                pass
+
+    def _nio_version(self):
+        try:
+            import nio
+            version = nio.__version__
+        except:
+            version = None
+        return version
+
 
 class PullBlocksAction:
 
