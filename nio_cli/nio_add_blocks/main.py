@@ -128,7 +128,7 @@ class AddProjectAction:
         print('n.io version: {}'.format(version))
         if version:
             try:
-                subprocess.call('cd ./{} && git checkout tags/{}'.format(
+                subprocess.call('git -C ./{} checkout tags/{}'.format(
                     self.args.project_name, version), shell=True)
             except Exception as e:
                 # This release doesn't have a version
