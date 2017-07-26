@@ -1,4 +1,5 @@
 from .new import *
+from .newblock import *
 from .server import *
 from .add import *
 from .list import *
