@@ -183,8 +183,16 @@ class TestCLI(unittest.TestCase):
                 "nio/SampleBlock1": {
                     "version": "0.1.0",
                     "description": "",
-                    "outputs": {},
-                    "inputs": {},
+                    "outputs": {
+                        "default": {
+                            "description": ""
+                        }
+                    },
+                    "inputs": {
+                        "default": {
+                            "description": ""
+                        }
+                    },
                     "properties": {
                         "another": {
                             "description": "",
@@ -205,8 +213,16 @@ class TestCLI(unittest.TestCase):
                 "nio/SampleBlock2": {
                     "version": "0.0.0",
                     "description": "",
-                    "outputs": {},
-                    "inputs": {},
+                    "outputs": {
+                        "default": {
+                            "description": ""
+                        }
+                    },
+                    "inputs": {
+                        "default": {
+                            "description": ""
+                        }
+                    },
                     "properties": {},
                     "commands": {},
                 },

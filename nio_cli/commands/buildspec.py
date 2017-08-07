@@ -29,7 +29,7 @@ class BuildSpec(Base):
         merged_spec = self._merge_previous_into_new_spec(previous_spec, spec)
         sorted_spec = self._order_dict(merged_spec)
         with open(file_path, 'w') as f:
-            json.dump(sorted_spec, f, indent=2)
+            json.dump(sorted_spec, f, indent=2, sort_keys=True)
 
     def _read_spec(self, file_path):
         if os.path.exists(file_path):
@@ -40,8 +40,9 @@ class BuildSpec(Base):
 
     def _merge_previous_into_new_spec(self, previous_spec, spec):
         for block in spec:
-            manual_fields = [("description", ""), ("outputs", {}),
-                             ("inputs", {})]
+            manual_fields = [("description", ""),
+                             ("outputs", {"default": {"description": ""}}),
+                             ("inputs", {"default": {"description": ""}})]
             for field in manual_fields:
                 spec[block][field[0]] = \
                     previous_spec.get(block, {}).get(field[0], field[1])
