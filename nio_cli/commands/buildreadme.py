@@ -51,6 +51,9 @@ class BuildReadme(Base):
         required_sections = \
             ["description", "properties", "inputs", "outputs", "commands"]
         for block in sorted(spec):
+            if block != sorted(spec)[0]:
+                writelines.append("***")
+                writelines.append("")
             block_name = block.split("/")[1]
             writelines.append(block_name)
             writelines.append(len(block_name) * "=")
