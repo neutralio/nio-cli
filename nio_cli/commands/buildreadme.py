@@ -61,7 +61,7 @@ class BuildReadme(Base):
                 if section in ["properties", "commands", "inputs", "outputs"]:
                     for property in sorted(spec[block][section]):
                         description = spec[block][section][property].get(
-                            "description", "")
+                            "description", "None")
                         writelines.append(
                             "- **{}**: {}".format(property, description))
                 else:
