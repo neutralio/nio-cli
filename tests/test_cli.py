@@ -363,6 +363,8 @@ class TestCLI(unittest.TestCase):
                 "--------\n"
                 "- **commandit**: a command\n"
                 "\n"
+                "***\n"
+                "\n"
                 "SampleBlock2\n"
                 "============\n"
                 "\n"
