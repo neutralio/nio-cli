@@ -11,14 +11,12 @@ class New(Base):
         self._template = self.options['--template'] or self.options['-t']
 
     def run(self):
-        if self._template:
-            clone = (
-                "git clone --depth=1 git://github.com/{}/{}.git {}"
-            ).format('niolabs', self._template, self._name)
-        else:
-            clone = (
-                "git clone --depth=1 git://github.com/{}/{}.git {}"
-            ).format('niolabs', 'project_template', self._name)
+        clone = (
+            "git clone --depth=1 git://github.com/{}/{}.git {}"
+        ).format('niolabs',
+                 self._template if self._template else 'project_template',
+                 self._name)
+
 
         submodule_update = (
             'cd ./{} '
