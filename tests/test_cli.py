@@ -532,6 +532,8 @@ class TestCLI(unittest.TestCase):
             '-d': False,
             '--upgrade': False,
             '-u': False,
+            '--template': None,
+            '-t': None,
         }
         args[command] = True
         for k, v in kwargs.items():
