@@ -71,10 +71,10 @@ class TestCLI(unittest.TestCase):
             )
 
     def test_server_command(self):
-        """Execute nio_run as a subprocess"""
+        """Execute niod as a subprocess"""
         with patch('nio_cli.commands.server.subprocess.Popen') as Popen:
             self._main('server')
-            self.assertEqual(Popen.call_args[0][0], ['nio_run'])
+            self.assertEqual(Popen.call_args[0][0], ['niod'])
 
     def test_add_command(self):
         """Clone specified blocks as submodules"""
