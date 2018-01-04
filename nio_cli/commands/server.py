@@ -8,7 +8,7 @@ class Server(Base):
     def __init__(self, options, *args, **kwargs):
         super().__init__(options, *args, **kwargs)
         self._daemon = self.options['--daemon'] or self.options['-d']
-        self._executable = 'niod'
+        self._executable = 'nio_run'
 
     def run(self):
         if self._daemon:
