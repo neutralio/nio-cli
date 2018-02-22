@@ -1,5 +1,6 @@
 import os
 import subprocess
+import pip
 from .base import Base
 from .config import config_project
 
@@ -33,5 +34,11 @@ class New(Base):
         if not os.path.isdir(self._name):
             return
         subprocess.call(submodule_update, shell=True)
+        # pip install all requirements.txt
+        for root, dirs, files in os.walk('./'):
+            for file_name in files:
+                if file_name == 'requirements.txt':
+                    reqs = os.path.join(root, file_name)
+                    pip.main(['install', '-r', reqs])
         config_project(self._name)
         subprocess.call(reinit_repo, shell=True)

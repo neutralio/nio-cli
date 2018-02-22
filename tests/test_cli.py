@@ -4,6 +4,7 @@ from unittest import skipIf
 from unittest.mock import mock_open, patch, ANY, MagicMock
 from docopt import docopt, DocoptExit
 from io import StringIO
+from collections import OrderedDict
 
 import nio_cli.cli as cli
 from nio.block.terminals import input
@@ -71,25 +72,34 @@ class TestCLI(unittest.TestCase):
                 with patch('nio_cli.commands.new.config_project') as config:
                     self._patched_new_command_template(call, config)
 
-    def _patched_new_command_template(self, call, config):
-        self._main('new', **{
-            '<project-name>': 'project',
-            '<template>': 'my_template',
-        })
-        config.assert_called_once_with('project')
-        self.assertEqual(call.call_args_list[0][0][0], (
-            'git clone --depth=1 '
-            'git://github.com/niolabs/my_template.git project'
-        ))
-        self.assertEqual(call.call_args_list[1][0][0], (
-            'cd ./project '
-            '&& git submodule update --init --recursive'
-        ))
-        self.assertEqual(call.call_args_list[2][0][0], (
-            'cd ./project '
-            '&& git remote remove origin '
-            '&& git commit --amend --reset-author -m "Initial commit"'
-        ))
+    @patch('nio_cli.commands.new.pip.main')
+    def _patched_new_command_template(self, call, config, patch_pip_main):
+        with patch('nio_cli.commands.new.os.walk') as patched_os_walk:
+            join_module = 'nio_cli.commands.new.os.path.join'
+            with patch(join_module, return_value='join'):
+                patched_os_walk.return_value = [
+                    ('root', ('dirs'), ['requirements.txt'])]
+
+                self._main('new', **{
+                    '<project-name>': 'project',
+                    '<template>': 'my_template',
+                })
+                config.assert_called_once_with('project')
+                self.assertEqual(call.call_args_list[0][0][0], (
+                    'git clone --depth=1 '
+                    'git://github.com/niolabs/my_template.git project'
+                ))
+                self.assertEqual(call.call_args_list[1][0][0], (
+                    'cd ./project '
+                    '&& git submodule update --init --recursive'
+                ))
+                self.assertEqual(call.call_args_list[2][0][0], (
+                    'cd ./project '
+                    '&& git remote remove origin '
+                    '&& git commit --amend --reset-author -m "Initial commit"'
+                ))
+                patch_pip_main.assert_called_once_with(
+                    ['install', '-r', 'join'])
 
     def test_new_command_with_failed_clone(self):
         """Cleanly handle new command when 'git clone' fails"""
@@ -106,7 +116,8 @@ class TestCLI(unittest.TestCase):
         ws_host = '123.websocket.nio.works'
         with patch('builtins.open', mock_open()) as mopen:
             with patch('builtins.input', side_effect=[pk_host, pk_token]):
-                with patch('nio_cli.commands.config.os.path.isfile', return_value=True):
+                isfile_module = 'nio_cli.commands.config.os.path.isfile'
+                with patch(isfile_module, return_value=True):
                     with patch('nio_cli.commands.config.os.rename') as rename:
                         with patch('nio_cli.commands.config.os.remove') as remove:
                             self._main('config')
@@ -115,7 +126,8 @@ class TestCLI(unittest.TestCase):
                             self.assertEqual(rename.call_count, 1)
 
     def test_config_with_no_nioenv(self):
-        with patch('nio_cli.commands.config.os.path.isfile', return_value=False):
+        isfile_module = 'nio_cli.commands.config.os.path.isfile'
+        with patch(isfile_module, return_value=False):
             with patch('builtins.print') as print:
                 with patch('builtins.open', mock_open()) as mopen:
                     self._main('config')
@@ -176,7 +188,6 @@ class TestCLI(unittest.TestCase):
         from nio.block.base import Block
         from nio.properties import StringProperty, VersionProperty
         from nio.command import command
-
         @command('commandit')
         @command('commander')
         class SampleBlock1(Block):
@@ -238,68 +249,52 @@ class TestCLI(unittest.TestCase):
             # json dump to file with formatting
             mock_json_dump.assert_called_once_with(
                 ANY, mock_file(), indent=2)
+
             self.maxDiff = None
-            self.assertDictEqual(mock_json_dump.call_args[0][0], {
-                'nio/SampleBlock1': {
-                    'version': '0.1.0',
-                    'description': '',
-                    'categories': [],
-                    'outputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    'inputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    'properties': {
-                        'another': {
-                            'description': '',
-                            'type': 'StringType',
-                            'title': 'Another Prop',
-                            'default': None
-                        },
-                        'str_prop': {
-                            'title': 'String Prop',
-                            'type': 'StringType',
-                            'default': 'default string',
-                            'description': '',
-                        }
-                    },
-                    'commands': {
-                        'commandit': {
-                            'description': '',
-                            'params': {}
-                        },
-                        'commander': {
-                            'description': '',
-                            'params': {}
-                        },
-                    },
-                },
-                'nio/SampleBlock2': {
-                    'version': '0.0.0',
-                    'description': '',
-                    'categories': [],
-                    'outputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    "inputs": {
-                        "testInput": {
-                            "description": ""
-                        },
-                        "testInput2": {
-                            "description": ""
-                        }
-                    },
-                    'properties': {},
-                    'commands': {},
-                },
-            })
+            ordered_dict = OrderedDict([
+                ('nio/SampleBlock1', OrderedDict([
+                    ('version', '0.1.0'),
+                    ('description', ''),
+                    ('categories', []),
+                    ('properties', OrderedDict([
+                        ('another', OrderedDict([
+                            ('title', 'Another Prop'),
+                            ('type', 'StringType'),
+                            ('description', ''),
+                            ('default', None)])),
+                        ('id', OrderedDict()),
+                        ('str_prop', OrderedDict([
+                            ('title', 'String Prop'),
+                            ('type', 'StringType'),
+                            ('description', ''),
+                            ('default', 'default string')]))
+                    ])),
+                    ('inputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('outputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('commands', OrderedDict([
+                        ('commander', {'params': {}, 'description': ''}),
+                        ('commandit', {'params': {}, 'description': ''})]))
+                ])),
+                ('nio/SampleBlock2', OrderedDict([
+                    ('version', '0.0.0'),
+                    ('description', ''),
+                    ('categories', []),
+                    ('properties', OrderedDict()),
+                    ('inputs', OrderedDict([
+                        ('testInput', {'description': ''}),
+                        ('testInput2', {'description': ''})
+                    ])),
+                    ('outputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('commands', OrderedDict())
+                ]))
+            ])
+            self.assertDictEqual(mock_json_dump.call_args[0][0], ordered_dict)
 
     @skipIf(not niocore_installed, 'niocore required for buildrelease')
     def test_buildrelease_command(self):
@@ -326,10 +321,12 @@ class TestCLI(unittest.TestCase):
             # by default
             pass
 
-        discover_path = 'nio_cli.commands.buildrelease.Discover.discover_classes'
+        discover_path = \
+            'nio_cli.commands.buildrelease.Discover.discover_classes'
         json_dump_path = 'nio_cli.commands.buildrelease.json.dump'
         file_exists_path = 'nio_cli.commands.buildrelease.os.path.exists'
-        subprocess_call_path = 'nio_cli.commands.buildrelease.subprocess.check_output'
+        subprocess_call_path = \
+            'nio_cli.commands.buildrelease.subprocess.check_output'
         with patch(discover_path) as discover_classes, \
                 patch('builtins.open', mock_open()) as mock_file, \
                 patch(file_exists_path) as mock_file_exists, \
@@ -338,7 +335,8 @@ class TestCLI(unittest.TestCase):
             # mocks to load existing spec.json and to discover blocks
             mock_file_exists.return_value = True
             discover_classes.return_value = [SampleBlock1, SampleBlock2]
-            check_output.return_value = b'origin git@github.com:niolabs/myblocks.git (fetch)'
+            check_output.return_value = \
+                b'origin git@github.com:niolabs/myblocks.git (fetch)'
             # Exectute on repo 'myblocks'
             self._main('buildrelease', **{'<repo-name>': 'myblocks'})
             discover_classes.assert_called_once_with(
