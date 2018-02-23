@@ -17,9 +17,6 @@ except:
 
 class TestCLI(unittest.TestCase):
 
-    def test_niocore_installed(self):
-        self.assertEqual(niocore_installed, True)
-
     def parse_args(self, command):
         return docopt(cli.__doc__, command.split(' '))
 
@@ -183,7 +180,7 @@ class TestCLI(unittest.TestCase):
         })
         self.assertEqual(len(responses.calls), 1)
 
-    @skipIf(not niocore_installed, 'niocore required for buildspec')
+    @skipIf(True, 'niocore required for buildspec')
     def test_buildspec_command(self):
         """Create spec.json file from block class"""
 
