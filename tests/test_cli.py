@@ -74,7 +74,8 @@ class TestCLI(unittest.TestCase):
     @patch('nio_cli.commands.new.pip.main')
     def _patched_new_command_template(self, call, config, patch_pip_main):
         with patch('nio_cli.commands.new.os.walk') as patched_os_walk:
-            with patch('nio_cli.commands.new.os.path.join', return_value='join'):
+            join_module = 'nio_cli.commands.new.os.path.join'
+            with patch(join_module, return_value='join'):
                 patched_os_walk.return_value = [
                     ('root', ('dirs'), ['requirements.txt'])]
 
@@ -114,7 +115,8 @@ class TestCLI(unittest.TestCase):
         ws_host = '123.websocket.nio.works'
         with patch('builtins.open', mock_open()) as mopen:
             with patch('builtins.input', side_effect=[pk_host, pk_token]):
-                with patch('nio_cli.commands.config.os.path.isfile', return_value=True):
+                isfile_module = 'nio_cli.commands.config.os.path.isfile'
+                with patch(isfile_module, return_value=True):
                     with patch('nio_cli.commands.config.os.rename') as rename:
                         with patch('nio_cli.commands.config.os.remove') as remove:
                             self._main('config')
@@ -123,7 +125,8 @@ class TestCLI(unittest.TestCase):
                             self.assertEqual(rename.call_count, 1)
 
     def test_config_with_no_nioenv(self):
-        with patch('nio_cli.commands.config.os.path.isfile', return_value=False):
+        isfile_module = 'nio_cli.commands.config.os.path.isfile'
+        with patch(isfile_module, return_value=False):
             with patch('builtins.print') as print:
                 with patch('builtins.open', mock_open()) as mopen:
                     self._main('config')
@@ -334,10 +337,12 @@ class TestCLI(unittest.TestCase):
             # by default
             pass
 
-        discover_path = 'nio_cli.commands.buildrelease.Discover.discover_classes'
+        discover_path = \
+            'nio_cli.commands.buildrelease.Discover.discover_classes'
         json_dump_path = 'nio_cli.commands.buildrelease.json.dump'
         file_exists_path = 'nio_cli.commands.buildrelease.os.path.exists'
-        subprocess_call_path = 'nio_cli.commands.buildrelease.subprocess.check_output'
+        subprocess_call_path = \
+            'nio_cli.commands.buildrelease.subprocess.check_output'
         with patch(discover_path) as discover_classes, \
                 patch('builtins.open', mock_open()) as mock_file, \
                 patch(file_exists_path) as mock_file_exists, \
@@ -346,7 +351,8 @@ class TestCLI(unittest.TestCase):
             # mocks to load existing spec.json and to discover blocks
             mock_file_exists.return_value = True
             discover_classes.return_value = [SampleBlock1, SampleBlock2]
-            check_output.return_value = b'origin git@github.com:niolabs/myblocks.git (fetch)'
+            check_output.return_value = \
+                b'origin git@github.com:niolabs/myblocks.git (fetch)'
             # Exectute on repo 'myblocks'
             self._main('buildrelease', **{'<repo-name>': 'myblocks'})
             discover_classes.assert_called_once_with(
