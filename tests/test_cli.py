@@ -11,12 +11,14 @@ from nio.block.terminals import input
 try:
     import niocore
     niocore_installed = True
-    print('$$$$$$$$$$ TRUE $$$$$$$$$$$')
 except:
     niocore_installed = False
 
 
 class TestCLI(unittest.TestCase):
+
+    def test_niocore_installed(self):
+        self.assertEqual(niocore_installed, True)
 
     def parse_args(self, command):
         return docopt(cli.__doc__, command.split(' '))
