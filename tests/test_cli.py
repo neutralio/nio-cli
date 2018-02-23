@@ -44,11 +44,10 @@ class TestCLI(unittest.TestCase):
         """Clone the project template from GitHub"""
         with patch('nio_cli.commands.new.os.path.isdir', return_value=True):
             with patch('nio_cli.commands.new.subprocess.call') as call:
-                with patch('nio_cli.commands.new.os.walk') as walk:
-                    with patch('nio_cli.commands.new.config_project') as config:
-                        self._patched_new_command(call, config, walk)
+                with patch('nio_cli.commands.new.config_project') as config:
+                    self._patched_new_command(call, config)
 
-    def _patched_new_command(self, call, config, walk):
+    def _patched_new_command(self, call, config):
         self._main('new', **{'<project-name>': 'project', '<template>': None})
         config.assert_called_once_with('project')
         self.assertEqual(call.call_args_list[0][0][0], (
@@ -64,7 +63,6 @@ class TestCLI(unittest.TestCase):
             '&& git remote remove origin '
             '&& git commit --amend --reset-author -m "Initial commit"'
         ))
-        walk.assert_called_with('./')
 
     def test_new_command_template(self):
         """Clone the project template from GitHub"""
