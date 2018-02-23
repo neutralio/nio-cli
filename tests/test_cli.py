@@ -11,6 +11,7 @@ from nio.block.terminals import input
 try:
     import niocore
     niocore_installed = True
+    print('$$$$$$$$$$ TRUE $$$$$$$$$$$')
 except:
     niocore_installed = False
 
