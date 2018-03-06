@@ -4,6 +4,7 @@ from unittest import skipIf
 from unittest.mock import mock_open, patch, ANY, MagicMock
 from docopt import docopt, DocoptExit
 from io import StringIO
+from collections import OrderedDict
 
 import nio_cli.cli as cli
 from nio.block.terminals import input
@@ -187,7 +188,6 @@ class TestCLI(unittest.TestCase):
         from nio.block.base import Block
         from nio.properties import StringProperty, VersionProperty
         from nio.command import command
-
         @command('commandit')
         @command('commander')
         class SampleBlock1(Block):
@@ -249,68 +249,52 @@ class TestCLI(unittest.TestCase):
             # json dump to file with formatting
             mock_json_dump.assert_called_once_with(
                 ANY, mock_file(), indent=2)
+
             self.maxDiff = None
-            self.assertDictEqual(mock_json_dump.call_args[0][0], {
-                'nio/SampleBlock1': {
-                    'version': '0.1.0',
-                    'description': '',
-                    'categories': [],
-                    'outputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    'inputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    'properties': {
-                        'another': {
-                            'description': '',
-                            'type': 'StringType',
-                            'title': 'Another Prop',
-                            'default': None
-                        },
-                        'str_prop': {
-                            'title': 'String Prop',
-                            'type': 'StringType',
-                            'default': 'default string',
-                            'description': '',
-                        }
-                    },
-                    'commands': {
-                        'commandit': {
-                            'description': '',
-                            'params': {}
-                        },
-                        'commander': {
-                            'description': '',
-                            'params': {}
-                        },
-                    },
-                },
-                'nio/SampleBlock2': {
-                    'version': '0.0.0',
-                    'description': '',
-                    'categories': [],
-                    'outputs': {
-                        'default': {
-                            'description': ''
-                        }
-                    },
-                    "inputs": {
-                        "testInput": {
-                            "description": ""
-                        },
-                        "testInput2": {
-                            "description": ""
-                        }
-                    },
-                    'properties': {},
-                    'commands': {},
-                },
-            })
+            ordered_dict = OrderedDict([
+                ('nio/SampleBlock1', OrderedDict([
+                    ('version', '0.1.0'),
+                    ('description', ''),
+                    ('categories', []),
+                    ('properties', OrderedDict([
+                        ('another', OrderedDict([
+                            ('title', 'Another Prop'),
+                            ('type', 'StringType'),
+                            ('description', ''),
+                            ('default', None)])),
+                        ('id', OrderedDict()),
+                        ('str_prop', OrderedDict([
+                            ('title', 'String Prop'),
+                            ('type', 'StringType'),
+                            ('description', ''),
+                            ('default', 'default string')]))
+                    ])),
+                    ('inputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('outputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('commands', OrderedDict([
+                        ('commander', {'params': {}, 'description': ''}),
+                        ('commandit', {'params': {}, 'description': ''})]))
+                ])),
+                ('nio/SampleBlock2', OrderedDict([
+                    ('version', '0.0.0'),
+                    ('description', ''),
+                    ('categories', []),
+                    ('properties', OrderedDict()),
+                    ('inputs', OrderedDict([
+                        ('testInput', {'description': ''}),
+                        ('testInput2', {'description': ''})
+                    ])),
+                    ('outputs', OrderedDict([
+                        ('default', {'description': ''})
+                    ])),
+                    ('commands', OrderedDict())
+                ]))
+            ])
+            self.assertDictEqual(mock_json_dump.call_args[0][0], ordered_dict)
 
     @skipIf(not niocore_installed, 'niocore required for buildrelease')
     def test_buildrelease_command(self):
