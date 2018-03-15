@@ -5,6 +5,7 @@ from unittest.mock import mock_open, patch, ANY, MagicMock
 from docopt import docopt, DocoptExit
 from io import StringIO
 from collections import OrderedDict
+import sys
 
 import nio_cli.cli as cli
 from nio.block.terminals import input
@@ -43,10 +44,10 @@ class TestCLI(unittest.TestCase):
 
     def test_new_command(self):
         """Clone the project template from GitHub"""
-        with patch('nio_cli.commands.new.os.path.isdir', return_value=True):
-            with patch('nio_cli.commands.new.subprocess.call') as call:
-                with patch('nio_cli.commands.new.config_project') as config:
-                    self._patched_new_command(call, config)
+        with patch('nio_cli.commands.new.os.path.isdir', return_value=True), \
+                patch('nio_cli.commands.new.subprocess.call') as call, \
+                patch('nio_cli.commands.new.config_project') as config:
+            self._patched_new_command(call, config)
 
     def _patched_new_command(self, call, config):
         self._main('new', **{'<project-name>': 'project', '<template>': None})
@@ -67,10 +68,10 @@ class TestCLI(unittest.TestCase):
 
     def test_new_command_template(self):
         """Clone the project template from GitHub"""
-        with patch('nio_cli.commands.new.os.path.isdir', return_value=True):
-            with patch('nio_cli.commands.new.subprocess.call') as call:
-                with patch('nio_cli.commands.new.config_project') as config:
-                    self._patched_new_command_template(call, config)
+        with patch('nio_cli.commands.new.os.path.isdir', return_value=True), \
+                patch('nio_cli.commands.new.subprocess.call') as call, \
+                patch('nio_cli.commands.new.config_project') as config:
+            self._patched_new_command_template(call, config)
 
     @patch('nio_cli.commands.new.pip.main')
     def _patched_new_command_template(self, call, config, patch_pip_main):
@@ -104,36 +105,68 @@ class TestCLI(unittest.TestCase):
     def test_new_command_with_failed_clone(self):
         """Cleanly handle new command when 'git clone' fails"""
         isdir_path = 'nio_cli.commands.new.os.path.isdir'
-        with patch(isdir_path, return_value=False) as isdir:
-            with patch('nio_cli.commands.new.subprocess.call') as call:
-                self._main('new', **{'<project-name>': 'project'})
-                self.assertEqual(call.call_count, 1)
-                isdir.assert_called_once_with('project')
+        with patch(isdir_path, return_value=False) as isdir, \
+                patch('nio_cli.commands.new.subprocess.call') as call:
+            self._main('new', **{'<project-name>': 'project'})
+            self.assertEqual(call.call_count, 1)
+            isdir.assert_called_once_with('project')
 
     def test_config_project(self):
         pk_host = '123.pubkeeper.nio.works'
         pk_token = '123123'
-        ws_host = '123.websocket.nio.works'
-        with patch('builtins.open', mock_open()) as mopen:
-            with patch('builtins.input', side_effect=[pk_host, pk_token]):
-                isfile_module = 'nio_cli.commands.config.os.path.isfile'
-                with patch(isfile_module, return_value=True):
-                    with patch('nio_cli.commands.config.os.rename') as rename:
-                        with patch('nio_cli.commands.config.os.remove') as remove:
-                            self._main('config')
-                            self.assertEqual(mopen.call_count, 1)
-                            remove.assert_called_once_with('./nio.conf')
-                            self.assertEqual(rename.call_count, 1)
+        with patch('builtins.open', mock_open()) as mopen, \
+                patch('builtins.input', side_effect=[pk_host, pk_token, 'N']), \
+                patch('nio_cli.commands.config.os.path.isfile', return_value=True), \
+                patch('nio_cli.commands.config.os.rename') as rename, \
+                patch('nio_cli.commands.config.os.remove') as remove:
+            self._main('config')
+            self.assertEqual(mopen.call_count, 1)
+            remove.assert_called_once_with('./nio.conf')
+            self.assertEqual(rename.call_count, 1)
 
-    def test_config_with_no_nioenv(self):
-        isfile_module = 'nio_cli.commands.config.os.path.isfile'
-        with patch(isfile_module, return_value=False):
-            with patch('builtins.print') as print:
-                with patch('builtins.open', mock_open()) as mopen:
-                    self._main('config')
-                    print.assert_called_once_with(
-                        'Command must be run from project root.')
-                    self.assertEqual(mopen.call_count, 0)
+    def test_config_project_secure(self):
+        pk_host = '123.pubkeeper.nio.works'
+        pk_token = '123123'
+        ssl_cert = '/path/to/certificate.pem'
+        ssl_key = '/path/to/private_key.pem'
+
+        with patch('builtins.open', mock_open()) as mopen, \
+                patch('builtins.input', side_effect=[pk_host, pk_token, 'Y', 'N', ssl_cert, ssl_key]), \
+                patch('nio_cli.commands.config.os.path.isfile', return_value=True), \
+                patch('nio_cli.commands.config.os.rename') as rename, \
+                patch('nio_cli.commands.config.os.remove') as remove:
+            self._main('config')
+            self.assertEqual(mopen.call_count, 2)
+            self.assertEqual(remove.call_count, 2)
+            self.assertEqual(rename.call_count, 2)
+
+    def test_config_project_self_signed_cert(self):
+        pk_host = '123.pubkeeper.nio.works'
+        pk_token = '123123'
+        sys.modules['OpenSSL'] = MagicMock()
+
+        with patch('builtins.open', mock_open()) as mopen, \
+                patch('builtins.input', side_effect=[pk_host, pk_token, 'Y', 'Y', 'US', 'CO', 'Denver', 'testOrg', 'testOwner', 'testUser']), \
+                patch('nio_cli.commands.config.os.path.isfile', return_value=True), \
+                patch('nio_cli.commands.config.os.rename') as rename, \
+                patch('nio_cli.commands.config.os.remove') as remove, \
+                patch('OpenSSL.crypto.dump_certificate') as add_cert, \
+                patch('OpenSSL.crypto.dump_privatekey') as add_key:
+            self._main('config')
+            self.assertEqual(mopen.call_count, 4)
+            self.assertEqual(remove.call_count, 2)
+            self.assertEqual(rename.call_count, 2)
+            self.assertEqual(add_cert.call_count, 1)
+            self.assertEqual(add_key.call_count, 1)
+
+    def test_config_with_no_nioconf(self):
+        with patch('nio_cli.commands.config.os.path.isfile', return_value=False), \
+                patch('builtins.print') as print, \
+                patch('builtins.open', mock_open()) as mopen:
+            self._main('config')
+            print.assert_called_once_with(
+                'Command must be run from project root.')
+            self.assertEqual(mopen.call_count, 0)
 
     def test_add_command(self):
         """Clone specified blocks as submodules"""
@@ -150,7 +183,7 @@ class TestCLI(unittest.TestCase):
     @responses.activate
     def test_list_command(self):
         """List blocks or services from the rest api"""
-        service_response=[{'api': 'response'}, {'another': 'service'}]
+        service_response = [{'api': 'response'}, {'another': 'service'}]
         responses.add(responses.GET,
                       'http://127.0.0.1:8181/services',
                       json=service_response)
@@ -458,7 +491,7 @@ class TestCLI(unittest.TestCase):
                     'builtins.open',
                     mock_open(
                         read_data='Example ..example_block TestExample')
-                ) as mock_file:
+        ) as mock_file:
             # need to patch open
             self._main('newblock', **{'<block-name>': 'yaba_daba'})
             self.assertEqual(call.call_args_list[0][0][0], (
@@ -466,16 +499,16 @@ class TestCLI(unittest.TestCase):
                 'git://github.com/nio-blocks/block_template.git yaba_daba'
             ))
             self.assertEqual(call.call_args_list[1][0][0],
-                'cd ./yaba_daba '
-                '&& mv example_block.py yaba_daba_block.py'
-            )
+                             'cd ./yaba_daba '
+                             '&& mv example_block.py yaba_daba_block.py'
+                             )
             self.assertEqual(call.call_args_list[2][0][0],
-                'cd ./yaba_daba/tests '
-                '&& mv test_example_block.py test_yaba_daba_block.py'
-            )
+                             'cd ./yaba_daba/tests '
+                             '&& mv test_example_block.py test_yaba_daba_block.py'
+                             )
             self.assertEqual(call.call_args_list[3][0][0],
-                'cd ./yaba_daba && mv BLOCK_README.md README.md'
-            )
+                             'cd ./yaba_daba && mv BLOCK_README.md README.md'
+                             )
             self.assertEqual(mock_file.call_args_list[0][0],
                              ('./yaba_daba/yaba_daba_block.py',))
             self.assertEqual(
