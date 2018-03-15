@@ -35,7 +35,7 @@ class New(Base):
             return
         subprocess.call(submodule_update, shell=True)
         # pip install all requirements.txt
-        for root, dirs, files in os.walk('./'):
+        for root, dirs, files in os.walk('./{}'.format(self._name)):
             for file_name in files:
                 if file_name == 'requirements.txt':
                     reqs = os.path.join(root, file_name)
