@@ -214,7 +214,7 @@ class TestCLI(unittest.TestCase):
         })
         self.assertEqual(len(responses.calls), 1)
 
-    @skipIf(True, 'niocore required for buildspec')
+    @skipIf(not niocore_installed, 'niocore required for buildspec')
     def test_buildspec_command(self):
         """Create spec.json file from block class"""
 
