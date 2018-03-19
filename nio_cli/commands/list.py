@@ -13,6 +13,10 @@ class List(Base):
         response = requests.get(self._base_url.format(self._resource),
                                 auth=self._auth)
         try:
-            [print(resource) for resource in response.json()]
+            [print(value['id'], value['name']) for key,
+                                    value in response.json().items()]
         except:
-            pass
+            try:
+                [print(resource) for resource in response.json()]
+            except:
+                pass
