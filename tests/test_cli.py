@@ -196,6 +196,22 @@ class TestCLI(unittest.TestCase):
                     print.call_args_list[index][0][0], service)
 
     @responses.activate
+    def test_list_command_with_id(self):
+        """List blocks or services from the rest api"""
+        block_response = [{'id1': {'name': 'name1', 'id': 'id1'},
+                           'id2': {'name': 'name2', 'id': 'id2'}}]
+        responses.add(responses.GET,
+                      'http://127.0.0.1:8181/blocks',
+                      json=block_response)
+        with patch('builtins.print') as print:
+            self._main('list', services=False)
+            self.assertEqual(len(responses.calls), 1)
+            self.assertEqual(print.call_count, len(block_response))
+            for index, block in enumerate(block_response):
+                self.assertDictEqual(
+                    print.call_args_list[index][0][0], block)
+
+    @responses.activate
     def test_shutdown_command(self):
         """Shutdown nio through the rest api"""
         responses.add(responses.GET, 'http://127.0.0.1:8181/shutdown')
