@@ -198,18 +198,20 @@ class TestCLI(unittest.TestCase):
     @responses.activate
     def test_list_command_with_id(self):
         """List blocks or services from the rest api"""
-        block_response = [{'id1': {'name': 'name1', 'id': 'id1'},
-                           'id2': {'name': 'name2', 'id': 'id2'}}]
+        blk_response = {'id1': {'name': 'name1', 'id': 'id1'},
+                        'id2': {'name': 'name2', 'id': 'id2'}}
         responses.add(responses.GET,
                       'http://127.0.0.1:8181/blocks',
-                      json=block_response)
+                      json=blk_response)
         with patch('builtins.print') as print:
             self._main('list', services=False)
             self.assertEqual(len(responses.calls), 1)
-            self.assertEqual(print.call_count, len(block_response))
-            for index, block in enumerate(block_response):
-                self.assertDictEqual(
-                    print.call_args_list[index][0][0], block)
+            self.assertEqual(print.call_count, 2)
+            for index, blk in enumerate(blk_response):
+                self.assertEqual(
+                    print.call_args_list[index],
+                    ((blk_response[blk]['id'], blk_response[blk]['name']),)
+                )
 
     @responses.activate
     def test_shutdown_command(self):
