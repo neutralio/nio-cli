@@ -11,8 +11,8 @@ def config_project(name='.'):
         print("Command must be run from project root.")
         return
 
-    pk_host = input('Enter Pubkeeper hostname (optional): ')
-    pk_token = input('Enter Pubkeeper token (optional): ')
+    pk_host = input('Enter Pubkeeper hostname (required): ')
+    pk_token = input('Enter Pubkeeper token (required): ')
     ws_host = pk_host.replace('pubkeeper', 'websocket')
 
     with open(conf_location, 'r') as nconf,\
@@ -29,7 +29,7 @@ def config_project(name='.'):
     os.remove(conf_location)
     os.rename(tmp.name, conf_location)
 
-    secure = input('Optional secure instance configuration [Y/N]: ')
+    secure = input('Optional secure instance configuration [y/n, default = n]: ')
     if secure.lower() == 'y':
         config_ssl(name, conf_location)
 
@@ -40,7 +40,7 @@ def config_ssl(name, conf_location):
     ssl_key = ''
     cwd = os.getcwd()
 
-    new_certs = input('Generate a self-signed certificate/key [Y/N]: ')
+    new_certs = input('Generate a self-signed certificate/key [y/n, default = n]: ')
 
     if (new_certs.lower() == 'y'):
         try:
@@ -69,9 +69,11 @@ def config_ssl(name, conf_location):
         cert.sign(kp, 'sha1')
 
         open('{}/certificate.pem'.format(name), "wt").write(
-            str(crypto.dump_certificate(crypto.FILETYPE_PEM, cert)))
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode('utf-8')
+            )
         open('{}/private_key.pem'.format(name), "wt").write(
-            str(crypto.dump_privatekey(crypto.FILETYPE_PEM, kp)))
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, kp).decode('utf-8')
+            )
 
         ssl_cert = '{}/{}/certificate.pem'.format(cwd, name)
         ssl_key = '{}/{}/private_key.pem'.format(cwd, name)
