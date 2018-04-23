@@ -3,6 +3,7 @@ import requests
 import os
 import re
 import tempfile
+import subprocess
 
 
 def config_project(name='.'):
@@ -11,6 +12,9 @@ def config_project(name='.'):
         print("Command must be run from project root.")
         return
 
+    print('')
+    print('')
+    print('\033[92m' + 'Configure your local instance:' + '\033[0m')
     pk_host = input('Enter Pubkeeper hostname (required): ')
     pk_token = input('Enter Pubkeeper token (required): ')
     ws_host = pk_host.replace('pubkeeper', 'websocket')
@@ -29,9 +33,12 @@ def config_project(name='.'):
     os.remove(conf_location)
     os.rename(tmp.name, conf_location)
 
-    secure = input('Optional secure instance configuration [y/n, default = n]: ')
+    secure = input('Secure instance with SSL (optional) [y/n, default = n]: ')
     if secure.lower() == 'y':
         config_ssl(name, conf_location)
+
+    else:
+        success_message(name)
 
 
 def config_ssl(name, conf_location):
@@ -40,6 +47,8 @@ def config_ssl(name, conf_location):
     ssl_key = ''
     cwd = os.getcwd()
 
+    print('')
+    print('\033[92m' + 'Configure SSL:' + '\033[0m')
     new_certs = input('Generate a self-signed certificate/key [y/n, default = n]: ')
 
     if (new_certs.lower() == 'y'):
@@ -93,6 +102,28 @@ def config_ssl(name, conf_location):
                 tmp.write(line)
     os.remove(conf_location)
     os.rename(tmp.name, conf_location)
+
+    success_message(name, True, new_certs.lower() == 'y')
+
+def success_message(name, ssl=False, self_signed=False):
+
+    print('')
+    print('\033[92m' + 'Success!' + '\033[0m')
+    print('First, start your instance by entering your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m' + ', and starting the nio daemon: '  + '\033[94m' + 'niod' + '\033[0m')
+
+    if (self_signed == True):
+        print('Next, accept your self-signed certificate by visiting ' + '\033[94m' + 'https://localhost:8181' + '\033[0m' + ' and clicking "Advanced > Proceed to Site Anyway".' + '\033[0m')
+
+    if (ssl == True):
+        print('Then, proceed to ' + '\033[94m' + 'https://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
+        print('- hostname:' + '\033[94m' + ' https://localhost ' + '\033[0m')
+
+    else:
+        print('Then, proceed to ' + '\033[94m' + 'http://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
+        print('- hostname:' + '\033[94m' + ' http://localhost ' + '\033[0m')
+
+    print('- port:' + '\033[94m' + ' 8181 ' + '\033[0m' + '(the default)')
+    print('')
 
 
 class Config(Base):
