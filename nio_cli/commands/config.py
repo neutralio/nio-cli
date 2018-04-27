@@ -29,8 +29,7 @@ def config_project(name='.'):
     if (standalone_pubkeeper.lower() == 'n'):
         pk_host = get_pkhost()
         pk_token = get_pktoken()
-        ws_host = pk_host.replace('.pubkeeper.', '.websocket.')
-        ws_host = ws_host.replace('pk.demo.', 'ws.demo.')
+        ws_host = pk_host.replace('pubkeeper', 'websocket')
 
         with open(conf_location, 'r') as nconf,\
                 tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
@@ -146,7 +145,7 @@ def success_message(name, ssl, self_signed, niohost, nioport, standalone_pubkeep
 
     if (standalone_pubkeeper and nioport <= 1024):
         print('- Start the nio daemon: '  + '\033[94m' + 'sudo niod -s nio.conf -s pk_server.conf' + '\033[0m')
-        print('- Start the nio daemon inn the background: '  + '\033[94m' + 'sudo nohup niod -s nio.conf -s pk_server.conf 2>&1 > /dev/null &' + '\033[0m')
+        print('- Start the nio daemon in the background: '  + '\033[94m' + 'sudo nohup niod -s nio.conf -s pk_server.conf 2>&1 > /dev/null &' + '\033[0m')
 
     elif (standalone_pubkeeper):
         print('- Start the nio daemon: '  + '\033[94m' + 'niod -s nio.conf -s pk_server.conf' + '\033[0m')
