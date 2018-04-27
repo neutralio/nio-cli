@@ -29,7 +29,8 @@ def config_project(name='.'):
     if (standalone_pubkeeper.lower() == 'n'):
         pk_host = get_pkhost()
         pk_token = get_pktoken()
-        ws_host = pk_host.replace('pubkeeper', 'websocket')
+        ws_host = pk_host.replace('.pubkeeper.', '.websocket.')
+        ws_host = ws_host.replace('pk.demo.', 'ws.demo.')
 
         with open(conf_location, 'r') as nconf,\
                 tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
@@ -140,24 +141,37 @@ def success_message(name, ssl, self_signed, niohost, nioport, standalone_pubkeep
 
     print('')
     print('\033[92m' + 'Success!' + '\033[0m')
+    print('')
+    print('First, start your instance:')
+    print('- Enter your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m')
 
     if (standalone_pubkeeper and nioport <= 1024):
-        print('First, start your instance by entering your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m' + ', and starting the nio daemon: '  + '\033[94m' + 'sudo niod -s nio.conf -s pk_server.conf' + '\033[0m')
+        print('- Start the nio daemon: '  + '\033[94m' + 'sudo niod -s nio.conf -s pk_server.conf' + '\033[0m')
+        print('- Start the nio daemon inn the background: '  + '\033[94m' + 'sudo nohup niod -s nio.conf -s pk_server.conf 2>&1 > /dev/null &' + '\033[0m')
+
     elif (standalone_pubkeeper):
-        print('First, start your instance by entering your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m' + ', and starting the nio daemon: '  + '\033[94m' + 'niod -s nio.conf -s pk_server.conf' + '\033[0m')
+        print('- Start the nio daemon: '  + '\033[94m' + 'niod -s nio.conf -s pk_server.conf' + '\033[0m')
+        print('- Start the nio daemon in the background: '  + '\033[94m' + 'nohup niod -s nio.conf -s pk_server.conf 2>&1 > /dev/null &' + '\033[0m')
+
     elif (nioport <= 1024):
-        print('First, start your instance by entering your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m' + ', and starting the nio daemon: '  + '\033[94m' + 'sudo niod' + '\033[0m')
+        print('- Start the nio daemon: '  + '\033[94m' + 'sudo niod' + '\033[0m')
+        print('- Start the nio daemon in the background: '  + '\033[94m' + 'sudo nohup niod 2>&1 > /dev/null &' + '\033[0m')
+
     else:
-        print('First, start your instance by entering your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m' + ', and starting the nio daemon: '  + '\033[94m' + 'niod' + '\033[0m')
+        print('- Start the nio daemon: '  + '\033[94m' + 'niod' + '\033[0m')
+        print('- Start the nio daemon in the background: '  + '\033[94m' + 'nohup niod 2>&1 > /dev/null &' + '\033[0m')
 
     if (self_signed == True):
+        print('')
         print('Next, accept your self-signed certificate by visiting ' + '\033[94m' + 'https://' + niohost + ':' + str(nioport) + '\033[0m' + ' and clicking "Advanced > Proceed to Site Anyway".' + '\033[0m')
 
     if (ssl == True):
+        print('')
         print('Then, proceed to ' + '\033[94m' + 'https://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
         print('- hostname:' + '\033[94m' + ' https://' + niohost + '\033[0m')
 
     else:
+        print('')
         print('Then, proceed to ' + '\033[94m' + 'http://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
         print('- hostname:' + '\033[94m' + ' http://' + niohost + '\033[0m')
 
