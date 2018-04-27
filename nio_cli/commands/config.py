@@ -141,7 +141,6 @@ def success_message(name, ssl, self_signed, niohost, nioport, standalone_pubkeep
 
     print('')
     print('\033[92m' + 'Success!' + '\033[0m')
-    print('')
     print('First, start your instance:')
     print('- Enter your project directory: ' + '\033[94m' + 'cd ' + name + '\033[0m')
 
@@ -163,16 +162,21 @@ def success_message(name, ssl, self_signed, niohost, nioport, standalone_pubkeep
 
     if (self_signed == True):
         print('')
-        print('Next, accept your self-signed certificate by visiting ' + '\033[94m' + 'https://' + niohost + ':' + str(nioport) + '\033[0m' + ' and clicking "Advanced > Proceed to Site Anyway".' + '\033[0m')
+        print('Next, accept your self-signed certificate:')
+        print('- Visit ' + '\033[94m' + 'https://' + niohost + ':' + str(nioport) + '\033[0m')
+        print('- Click "Advanced > Proceed to Site Anyway".' + '\033[0m')
+
+    print('')
+    print('Then, add your local instance to the designer:')
 
     if (ssl == True):
-        print('')
-        print('Then, proceed to ' + '\033[94m' + 'https://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
+        print('- Visit ' + '\033[94m' + 'https://app.n.io/design' + '\033[0m')
+        print('- Choose your system and click "Add Instance"')
         print('- hostname:' + '\033[94m' + ' https://' + niohost + '\033[0m')
 
     else:
-        print('')
-        print('Then, proceed to ' + '\033[94m' + 'http://app.n.io/design' + '\033[0m' + ' and add your local instance to the designer: ')
+        print('- Visit ' + '\033[94m' + 'http://app.n.io/design' + '\033[0m')
+        print('- Choose your system and click "Add Instance"')
         print('- hostname:' + '\033[94m' + ' http://' + niohost + '\033[0m')
 
     print('- port: ' + '\033[94m' + str(nioport) + '\033[0m')
