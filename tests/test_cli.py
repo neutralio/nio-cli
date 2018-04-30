@@ -50,8 +50,13 @@ class TestCLI(unittest.TestCase):
             self._patched_new_command(call, config)
 
     def _patched_new_command(self, call, config):
-        self._main('new', **{'<project-name>': 'project', '<template>': None})
-        config.assert_called_once_with('project')
+        self._main('new', **{
+            '<project-name>': 'project',
+            '<template>': None,
+            '--pubkeeper-hostname': None,
+            '--pubkeeper-token': None,
+        })
+        config.assert_called_once_with('project', None, None)
         self.assertEqual(call.call_args_list[0][0][0], (
             'git clone --depth=1 '
             'git://github.com/niolabs/project_template.git project'
@@ -83,8 +88,10 @@ class TestCLI(unittest.TestCase):
                 self._main('new', **{
                     '<project-name>': 'project',
                     '<template>': 'my_template',
+                    '--pubkeeper-hostname': 'pkhost',
+                    '--pubkeeper-token': 'pktoken',
                 })
-                config.assert_called_once_with('project')
+                config.assert_called_once_with('project', 'pkhost', 'pktoken')
                 self.assertEqual(call.call_args_list[0][0][0], (
                     'git clone --depth=1 '
                     'git://github.com/niolabs/my_template.git project'

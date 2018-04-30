@@ -5,14 +5,16 @@ import re
 import tempfile
 
 
-def config_project(name='.'):
+def config_project(name='.', pubkeeper_hostname=None, pubkeeper_token=None):
     conf_location = '{}/nio.conf'.format(name)
     if not os.path.isfile(conf_location):
         print("Command must be run from project root.")
         return
 
-    pk_host = input('Enter Pubkeeper hostname (optional): ')
-    pk_token = input('Enter Pubkeeper token (optional): ')
+    pk_host = input('Enter Pubkeeper hostname (optional): ') \
+        if pubkeeper_hostname is None else pubkeeper_hostname
+    pk_token = input('Enter Pubkeeper token (optional): ') \
+        if pubkeeper_token is None else pubkeeper_token
     ws_host = pk_host.replace('pubkeeper', 'websocket')
 
     with open(conf_location, 'r') as nconf,\
