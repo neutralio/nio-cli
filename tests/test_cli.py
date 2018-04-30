@@ -112,10 +112,13 @@ class TestCLI(unittest.TestCase):
             isdir.assert_called_once_with('project')
 
     def test_config_project(self):
+        niohost = 'localhost'
+        nioport = '8181'
+        standalone_pubkeeper = 'N'
         pk_host = '123.pubkeeper.nio.works'
         pk_token = '123123'
         with patch('builtins.open', mock_open()) as mopen, \
-                patch('builtins.input', side_effect=[pk_host, pk_token, 'N']), \
+                patch('builtins.input', side_effect=[niohost, nioport, standalone_pubkeeper, pk_host, pk_token, 'N']), \
                 patch('nio_cli.commands.config.os.path.isfile', return_value=True), \
                 patch('nio_cli.commands.config.os.rename') as rename, \
                 patch('nio_cli.commands.config.os.remove') as remove:
@@ -125,13 +128,16 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(rename.call_count, 1)
 
     def test_config_project_secure(self):
+        niohost = 'localhost'
+        nioport = '8181'
+        standalone_pubkeeper = 'N'
         pk_host = '123.pubkeeper.nio.works'
         pk_token = '123123'
         ssl_cert = '/path/to/certificate.pem'
         ssl_key = '/path/to/private_key.pem'
 
         with patch('builtins.open', mock_open()) as mopen, \
-                patch('builtins.input', side_effect=[pk_host, pk_token, 'Y', 'N', ssl_cert, ssl_key]), \
+                patch('builtins.input', side_effect=[niohost, nioport, standalone_pubkeeper, pk_host, pk_token, 'Y', 'N', ssl_cert, ssl_key]), \
                 patch('nio_cli.commands.config.os.path.isfile', return_value=True), \
                 patch('nio_cli.commands.config.os.rename') as rename, \
                 patch('nio_cli.commands.config.os.remove') as remove:
@@ -153,11 +159,11 @@ class TestCLI(unittest.TestCase):
                 patch('OpenSSL.crypto.dump_certificate') as add_cert, \
                 patch('OpenSSL.crypto.dump_privatekey') as add_key:
             self._main('config')
-            self.assertEqual(mopen.call_count, 4)
-            self.assertEqual(remove.call_count, 2)
-            self.assertEqual(rename.call_count, 2)
-            self.assertEqual(add_cert.call_count, 1)
-            self.assertEqual(add_key.call_count, 1)
+            self.assertEqual(mopen.call_count, 1)
+            self.assertEqual(remove.call_count, 1)
+            self.assertEqual(rename.call_count, 1)
+            self.assertEqual(add_cert.call_count, 0)
+            self.assertEqual(add_key.call_count, 0)
 
     def test_config_with_no_nioconf(self):
         with patch('nio_cli.commands.config.os.path.isfile', return_value=False), \
