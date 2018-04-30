@@ -313,7 +313,6 @@ class TestCLI(unittest.TestCase):
                             ('type', 'StringType'),
                             ('description', ''),
                             ('default', None)])),
-                        ('id', OrderedDict()),
                         ('str_prop', OrderedDict([
                             ('title', 'String Prop'),
                             ('type', 'StringType'),
