@@ -30,15 +30,23 @@ with open('nio_cli/__init__.py', 'r') as fd:
 if not version:
     raise RuntimeError('Cannot find version information')
 
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
 setup(
     name='nio-cli',
     version=version,
     description='Command line tools for the nio Platform',
+    long_description=readme(),
     url='https://github.com/niolabs/nio-cli',
     author='niolabs',
     author_email='support@n.io',
     keywords=['nio'],
-    license='Proprietary',
+    license='Apache 2.0',
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+    ],
     packages=find_packages(exclude=['docs', 'tests', 'tests.*']),
     install_requires=['nio', 'requests', 'docopts', 'pycodestyle'],
     tests_require=['pytest', 'pytest-cov', 'responses'],
