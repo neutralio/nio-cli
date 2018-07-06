@@ -5,7 +5,9 @@
 
 **Added:**
 
-- Use --user flag for all dependancy install [\#103](https://github.com/niolabs/nio-cli/pull/103) ([tlugger](https://github.com/tlugger))
+- Ability to add/update/remove user credentials and permissions
+- Use `--project` to specify project root for config, add, add_user, and remove_user
+- Use `--username` and `--password` to specify user credentials for all commands
 
 ## [0.6.2](https://github.com/niolabs/nio-cli/tree/0.6.2) (2018-05-23)
 [Full Changelog](https://github.com/niolabs/nio-cli/compare/0.6.1...0.6.2)
