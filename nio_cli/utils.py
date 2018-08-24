@@ -77,10 +77,10 @@ def _config_ssl(name, conf_location):
         cert.set_pubkey(kp)
         cert.sign(kp, 'sha1')
 
-        open('{}/certificate.pem'.format(name), "wt").write(
-            str(crypto.dump_certificate(crypto.FILETYPE_PEM, cert)))
-        open('{}/private_key.pem'.format(name), "wt").write(
-            str(crypto.dump_privatekey(crypto.FILETYPE_PEM, kp)))
+        open('{}/certificate.pem'.format(name), "wb").write(
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+        open('{}/private_key.pem'.format(name), "wb").write(
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, kp))
 
         ssl_cert = '{}/{}/certificate.pem'.format(cwd, name)
         ssl_key = '{}/{}/private_key.pem'.format(cwd, name)

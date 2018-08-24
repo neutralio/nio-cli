@@ -56,9 +56,9 @@ class TestConfigSSL(unittest.TestCase):
         self._run_config_ssl(user_input)
         self.assertEqual(self.mock_open.call_count, 3)
         self.assertEqual(
-            self.mock_open.call_args_list[0][0], ('./certificate.pem', 'wt'))
+            self.mock_open.call_args_list[0][0], ('./certificate.pem', 'wb'))
         self.assertEqual(
-            self.mock_open.call_args_list[1][0], ('./private_key.pem', 'wt'))
+            self.mock_open.call_args_list[1][0], ('./private_key.pem', 'wb'))
         self.assertEqual(
             self.mock_open.call_args_list[2][0], ('./nio.conf', 'r'))
         self.mock_os.remove.assert_called_once_with('./nio.conf')
