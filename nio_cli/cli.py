@@ -8,7 +8,7 @@ Usage:
   nio [options] (list | ls) services
   nio [options] (list | ls) blocks
   nio [options] (command | co) <command-name> [--args=<args> (<service-name> | <block-name>)]
-  nio [options] (config | cfg) [--pubkeeper-hostname=HOST --pubkeeper-token=TOKEN]
+  nio [options] (config | cfg) [--pubkeeper-hostname=HOST --pubkeeper-token=TOKEN --ssl]
   nio [options] (config | cfg) services <service-name>
   nio [options] (config | cfg) blocks <block-name>
   nio [options] clone services <service-name> <new-name>
