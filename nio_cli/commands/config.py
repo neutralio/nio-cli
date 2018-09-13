@@ -1,5 +1,6 @@
-from nio_cli.utils import set_user, config_project
+from nio_cli.utils import config_project
 from .base import Base
+
 
 class Config(Base):
     """ Get basic nio info """

@@ -648,12 +648,13 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(set_user_patch.call_args_list[0],
                              call('testing_project', 'user', 'pwd'))
 
-        from nio_cli.utils import set_user, _hash_password, _set_permissions
+        from nio_cli.utils.users import set_user, _hash_password, \
+            _set_permissions
         with patch(set_user.__module__ + '.os') as mock_os, \
                 patch(set_user.__module__ + '.json') as mock_json, \
                 patch('builtins.open') as mock_open, \
-                patch('nio_cli.utils._hash_password') as mock_hash, \
-                patch('nio_cli.utils._set_permissions'):
+                patch('nio_cli.utils.users._hash_password') as mock_hash, \
+                patch('nio_cli.utils.users._set_permissions'):
             mock_os.path.isfile.return_value = True
             mock_hash.return_value = "AdminPwdHash"
             mock_json.load.return_value = {"Admin": "AdminPwd"}

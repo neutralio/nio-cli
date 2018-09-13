@@ -48,9 +48,18 @@ setup(
         'License :: OSI Approved :: Apache Software License',
     ],
     packages=find_packages(exclude=['docs', 'tests', 'tests.*']),
-    install_requires=['nio', 'requests', 'docopts', 'pycodestyle', 'bcrypt'],
+    install_requires=[
+        'nio',
+        'requests',
+        'docopts',
+        'pycodestyle',
+        'bcrypt',
+        'cryptography',
+    ],
     tests_require=['pytest', 'pytest-cov', 'responses'],
-    extras_require={'dev': ['responses']},
+    extras_require={
+        'dev': ['responses'],
+    },
     cmdclass={'test': PyTest},
     entry_points={
         'console_scripts': [
