@@ -31,15 +31,17 @@ class Base(object):
     @staticmethod
     def _execute_request(fn, *args, **kwargs):
         response = fn(*args, **kwargs)
+        # use response.text rather than response.reason to be able
+        # to see actual exception message along with reason
         if response.status_code == 401:
             msg = "Client error, status: {}, message: {} "\
                   ", Try running again with '--username' and '--password' options".\
-                  format(response.status_code, response.reason)
+                  format(response.status_code, response.text)
             print(msg)
             raise RuntimeError(msg)
         elif response.status_code >= 400:
             msg = "Client error, status: {}, message: {}".format(
-                response.status_code, response.reason)
+                response.status_code, response.text)
             print(msg)
             raise RuntimeError(msg)
 

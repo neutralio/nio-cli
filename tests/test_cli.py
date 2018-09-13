@@ -174,26 +174,24 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(call.call_count, 1)
             isdir.assert_called_once_with('project')
 
+    @responses.activate
     def test_add_command(self):
         """Clone specified blocks as submodules"""
-        with patch('nio_cli.commands.add.os') as mock_os, \
-            patch('nio_cli.commands.add.json') as mock_json, \
-            patch('builtins.open') as mock_open, \
-            patch('nio_cli.commands.add.subprocess.call') as call:
-            mock_os.isfile.return_value = True
+        responses.add(responses.POST,
+                      'http://127.0.0.1:8181/project/blocks')
+        self._main('add', **{
+            '<block-repo>': ['block1'],
+            '--project': '.'
+        })
+        self.assertEqual(len(responses.calls), 1)
 
-            self._main('add', **{
-                '<block-repo>': ['block1'],
-                '--project': '.'
-            })
-            self.assertEqual(call.call_args_list[0][0][0], (
-                'git submodule add git://github.com/nio-blocks/block1.git '
-                './blocks/block1'
-            ))
-            self.assertEqual(call.call_args_list[1][0][0], (
-                'git submodule update --init --recursive'
-            ))
-            self.assertTrue(mock_open.call_count == 2)
+        self._main('add', **{
+            '<block-repo>': ['block1'],
+            '--project': '.',
+            '--upgrade': True
+        })
+        self.assertEqual(len(responses.calls), 3)
+
 
     @responses.activate
     def test_list_command(self):
