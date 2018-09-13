@@ -2,12 +2,9 @@ import os
 import os.path
 import unittest
 from unittest.mock import mock_open, patch, ANY
-
 from nio_cli.utils.ssl import config_ssl
 
 
-# @patch('nio_cli.utils.ssl.input')
-# @patch('builtins.open', new_callable=mock_open)
 class TestConfigSSL(unittest.TestCase):
 
     def _run_config_ssl(self, user_input=None, isfile=True, kwargs={}):
