@@ -17,14 +17,20 @@ def config_ssl(root):
     host = get_string(
         "Enter the host where you will access your instance",
         default="localhost")
-    cert_crt, cert_key = _create_cert(host)
+    ca_crt, ca_key = _create_ca()
+    ca_cert_path = 'etc/ssl/ca.crt'
+    ca_key_path = 'etc/ssl/ca.key'
+    _save_key(root, ca_key_path, ca_key)
+    _save_cert(root, ca_cert_path, ca_crt)
+
+    cert_crt, cert_key = _create_instance_cert(host, ca_crt, ca_key)
     cert_path = 'etc/ssl/cert.crt'
     key_path = 'etc/ssl/cert.key'
     _save_key(root, key_path, cert_key)
     _save_cert(root, cert_path, cert_crt)
 
     if system() == 'Darwin':
-        _trust_cert_mac(join(root, cert_path))
+        _trust_cert_mac(join(root, ca_cert_path))
     else:
         print("Couldn't detect OS type, you may need to trust your "
               "newly created certificate")
@@ -47,10 +53,28 @@ def _save_key(root, filename, key):
         ))
 
 
-def _create_cert(host):
+def _create_ca():
+    return _create_cert(
+        host=None,
+        signing_cert=None,
+        signing_key=None,
+        common_name="nio local instance CA",
+    )
+
+
+def _create_instance_cert(host, signing_cert, signing_key):
+    return _create_cert(
+        host=host,
+        signing_cert=signing_cert,
+        signing_key=signing_key,
+        common_name=host,
+    )
+
+
+def _create_cert(host, signing_cert, signing_key, common_name):
     """ Creates a new certificate signed with a key
 
-    If no signing key is specified a new key will be created.
+    If no signing key is specified the cert's private key will be used
 
     Args:
         host: The host for the certificate
@@ -66,33 +90,99 @@ def _create_cert(host):
         backend=default_backend(),
     )
 
-    # Figure out if the host is an IP address or a DNS name and create the
-    # proper x509 resource for the SAN extension here
-    try:
-        host_resource = x509.IPAddress(ip_address(host))
-    except ValueError:
-        host_resource = x509.DNSName(host)
-
-    # Create a self-signed cert
-    subject = issuer = x509.Name([
+    subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "CO"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, "Broomfield"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "niolabs"),
-        x509.NameAttribute(NameOID.COMMON_NAME, "nio local instance"),
+        x509.NameAttribute(NameOID.COMMON_NAME, common_name),
     ])
-    cert = x509.CertificateBuilder()\
+    if signing_key is None:
+        # No signing key specified, sign with the private key instead
+        signing_key = pk
+
+    if signing_cert is None:
+        issuer = subject
+    else:
+        issuer = signing_cert.subject
+
+    builder = x509.CertificateBuilder()\
         .subject_name(subject)\
         .issuer_name(issuer)\
         .public_key(pk.public_key())\
         .serial_number(x509.random_serial_number())\
         .not_valid_before(datetime.utcnow())\
-        .not_valid_after(datetime.utcnow() + timedelta(days=365))\
-        .add_extension(
+        .not_valid_after(datetime.utcnow() + timedelta(days=365))
+
+    if host:
+        # This is a local certificate
+        try:
+            # Figure out if the host is an IP address or a DNS name and
+            # create the proper x509 resource for the SAN extension here
+            host_resource = x509.IPAddress(ip_address(host))
+        except ValueError:
+            host_resource = x509.DNSName(host)
+        builder = builder.add_extension(
             x509.SubjectAlternativeName([host_resource]),
             critical=False,
-        )\
-        .sign(pk, hashes.SHA256(), default_backend())
+        ).add_extension(
+            x509.BasicConstraints(ca=False, path_length=None),
+            critical=True,
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(pk.public_key()),
+            critical=False,
+        ).add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(
+                signing_cert.extensions.get_extension_for_class(
+                    x509.SubjectKeyIdentifier)
+            ),
+            critical=False,
+        ).add_extension(
+            x509.KeyUsage(
+                digital_signature=False,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=True,
+                crl_sign=True,
+                encipher_only=False,
+                decipher_only=False,
+            ), critical=False,
+        ).add_extension(
+            x509.ExtendedKeyUsage([
+                x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH,
+                x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
+            ]),
+            critical=False,
+        )
+    else:
+        # This is a CA certificate
+        builder = builder.add_extension(
+            x509.BasicConstraints(ca=True, path_length=None),
+            critical=True,
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(pk.public_key()),
+            critical=False,
+        ).add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                pk.public_key()),
+            critical=False,
+        ).add_extension(
+            x509.KeyUsage(
+                digital_signature=True,
+                content_commitment=False,
+                key_encipherment=False,
+                data_encipherment=False,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                encipher_only=None,
+                decipher_only=None,
+            ), critical=False,
+        )
+
+    cert = builder.sign(signing_key, hashes.SHA256(), default_backend())
 
     return cert, pk
 
