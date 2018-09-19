@@ -137,24 +137,6 @@ def _create_cert(host, signing_cert, signing_key, common_name):
                     x509.SubjectKeyIdentifier)
             ),
             critical=False,
-        ).add_extension(
-            x509.KeyUsage(
-                digital_signature=False,
-                content_commitment=False,
-                key_encipherment=False,
-                data_encipherment=False,
-                key_agreement=False,
-                key_cert_sign=True,
-                crl_sign=True,
-                encipher_only=False,
-                decipher_only=False,
-            ), critical=False,
-        ).add_extension(
-            x509.ExtendedKeyUsage([
-                x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH,
-                x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
-            ]),
-            critical=False,
         )
     else:
         # This is a CA certificate
@@ -168,18 +150,6 @@ def _create_cert(host, signing_cert, signing_key, common_name):
             x509.AuthorityKeyIdentifier.from_issuer_public_key(
                 pk.public_key()),
             critical=False,
-        ).add_extension(
-            x509.KeyUsage(
-                digital_signature=True,
-                content_commitment=False,
-                key_encipherment=False,
-                data_encipherment=False,
-                key_agreement=False,
-                key_cert_sign=False,
-                crl_sign=False,
-                encipher_only=None,
-                decipher_only=None,
-            ), critical=False,
         )
 
     cert = builder.sign(signing_key, hashes.SHA256(), default_backend())
