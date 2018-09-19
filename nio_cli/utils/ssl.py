@@ -5,47 +5,80 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from datetime import datetime, timedelta
 from ipaddress import ip_address
-from os import makedirs, getcwd
-from os.path import join
+from os.path import join, isfile, dirname
 from platform import system
 from subprocess import run
 from .inputs import get_boolean, get_string
+from .files import ensure_dir_exists, DEFAULT_ROOT
 
 
 def config_ssl(root):
-    makedirs(join(root, 'etc/ssl'), exist_ok=True)
+    # See if they want to specify a custom CA to sign with
+    ca_cert_path = get_string(
+        "Enter the path to your CA certificate. If the CA does not exist "
+        "one will be created there for you",
+        default=join(DEFAULT_ROOT, 'ca.crt'))
+    ca_key_path = get_string(
+        "Enter the path to your CA private key. If the key does not exist "
+        "one will be created there for you",
+        default=join(DEFAULT_ROOT, 'ca.key'))
+    if not isfile(ca_cert_path):
+        print("No CA certificate found, creating one...")
+        ca_crt, ca_key = _create_ca()
+        ensure_dir_exists(dirname(ca_cert_path))
+        ensure_dir_exists(dirname(ca_key_path))
+        _save_cert(ca_cert_path, ca_crt)
+        _save_key(ca_key_path, ca_key)
+        _trust_cert(ca_cert_path)
+    else:
+        ca_crt = _read_cert(ca_cert_path)
+        ca_key = _read_key(ca_key_path)
+
     host = get_string(
         "Enter the host where you will access your instance",
         default="localhost")
-    ca_crt, ca_key = _create_ca()
-    ca_cert_path = 'etc/ssl/ca.crt'
-    ca_key_path = 'etc/ssl/ca.key'
-    _save_key(root, ca_key_path, ca_key)
-    _save_cert(root, ca_cert_path, ca_crt)
 
     cert_crt, cert_key = _create_instance_cert(host, ca_crt, ca_key)
-    cert_path = 'etc/ssl/cert.crt'
-    key_path = 'etc/ssl/cert.key'
-    _save_key(root, key_path, cert_key)
-    _save_cert(root, cert_path, cert_crt)
+    cert_path = join(root, 'etc', 'ssl', 'cert.crt')
+    key_path = join(root, 'etc', 'ssl', 'cert.key')
+    ensure_dir_exists(join(root, 'etc', 'ssl'))
+    _save_key(key_path, cert_key)
+    _save_cert(cert_path, cert_crt)
 
+    return cert_path, key_path
+
+
+def _trust_cert(cert_path):
     if system() == 'Darwin':
-        _trust_cert_mac(join(root, ca_cert_path))
+        _trust_cert_mac(cert_path)
     else:
         print("Couldn't detect OS type, you may need to trust your "
               "newly created certificate")
 
-    cwd = getcwd()
-    return join(cwd, root, cert_path), join(cwd, root, key_path)
+
+def _read_cert(filename):
+    with open(filename, 'rb') as f:
+        cert = x509.load_pem_x509_certificate(f.read(), default_backend())
+    return cert
 
 
-def _save_cert(root, filename, cert):
-    with open(join(root, filename), 'wb') as f:
+def _read_key(filename):
+    with open(filename, 'rb') as f:
+        key = serialization.load_pem_private_key(
+            f.read(),
+            password=None,
+            backend=default_backend(),
+        )
+    return key
+
+
+def _save_cert(filename, cert):
+    with open(filename, 'wb') as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
-def _save_key(root, filename, key):
-    with open(join(root, filename), 'wb') as f:
+def _save_key(filename, key):
+    with open(filename, 'wb') as f:
         f.write(key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
