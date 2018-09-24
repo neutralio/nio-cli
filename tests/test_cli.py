@@ -61,7 +61,7 @@ class TestCLI(unittest.TestCase):
                                        nioport='8181',
                                        pubkeeper_hostname=None,
                                        pubkeeper_token=None,
-                                       ssl=None)
+                                       ssl=True)
         self.assertEqual(call.call_args_list[0][0][0], (
             'git clone '
             'git://github.com/niolabs/project_template.git project'
@@ -102,7 +102,7 @@ class TestCLI(unittest.TestCase):
                                        nioport='8181',
                                        pubkeeper_hostname=None,
                                        pubkeeper_token=None,
-                                       ssl=None)
+                                       ssl=True)
         self.assertEqual(call.call_args_list[0][0][0], (
             'git clone '
             'git://github.com/niolabs/project_template.git project'
@@ -142,7 +142,7 @@ class TestCLI(unittest.TestCase):
                                                nioport='8181',
                                                pubkeeper_hostname='pkhost',
                                                pubkeeper_token='pktoken',
-                                               ssl=None)
+                                               ssl=True)
                 self.assertEqual(call.call_args_list[0][0][0], (
                     'git clone '
                     'git://github.com/niolabs/my_template.git project'

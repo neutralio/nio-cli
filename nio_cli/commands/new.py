@@ -16,6 +16,7 @@ class New(Base):
         self._username = self.options.get('--username')
         self._password = self.options.get('--password')
         self._ssl = self.options.get('--ssl')
+        self._no_ssl = self.options.get('--no-ssl')
         self._niohost = self.options.get('--ip')
         self._nioport = self.options.get('--port')
 
@@ -53,10 +54,14 @@ class New(Base):
         if self._username and self._password:
             set_user(self._name, self._username, self._password, True)
 
+        if self._ssl:
+            print("Note: the --ssl flag is deprecated, SSL support is included"
+                  " by default. Use --no-ssl to disable SSL")
+
         config_project(name=self._name,
                        pubkeeper_hostname=self._pubkeeper_hostname,
                        pubkeeper_token=self._pubkeeper_token,
-                       ssl=self._ssl,
+                       ssl=not self._no_ssl,
                        niohost=self._niohost,
                        nioport=self._nioport
         )
