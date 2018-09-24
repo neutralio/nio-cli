@@ -29,10 +29,10 @@ class TestConfigSSL(unittest.TestCase):
         ], isfile=False)
         self.assertEqual(
             self.cert_path,
-            os.path.join('.', 'etc', 'ssl', 'cert.crt'))
+            os.path.join('etc', 'ssl', 'cert.crt'))
         self.assertEqual(
             self.key_path,
-            os.path.join('.', 'etc', 'ssl', 'cert.key'))
+            os.path.join('etc', 'ssl', 'cert.key'))
         self.mock_open.assert_any_call('./etc/ssl/cert.crt', 'wb')
         self.mock_open.assert_any_call('./etc/ssl/cert.key', 'wb')
         self.mock_run.assert_not_called()
@@ -46,10 +46,10 @@ class TestConfigSSL(unittest.TestCase):
         ], isfile=False)
         self.assertEqual(
             self.cert_path,
-            os.path.join('.', 'etc', 'ssl', 'cert.crt'))
+            os.path.join('etc', 'ssl', 'cert.crt'))
         self.assertEqual(
             self.key_path,
-            os.path.join('.', 'etc', 'ssl', 'cert.key'))
+            os.path.join('etc', 'ssl', 'cert.key'))
         self.mock_open.assert_any_call('./etc/ssl/cert.crt', 'wb')
         self.mock_open.assert_any_call('./etc/ssl/cert.key', 'wb')
         self.mock_run.assert_called_once_with(ANY, check=True, shell=True)

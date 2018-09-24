@@ -39,11 +39,11 @@ def config_ssl(root):
         default="localhost")
 
     cert_crt, cert_key = _create_instance_cert(host, ca_crt, ca_key)
-    cert_path = join(root, 'etc', 'ssl', 'cert.crt')
-    key_path = join(root, 'etc', 'ssl', 'cert.key')
+    cert_path = join('etc', 'ssl', 'cert.crt')
+    key_path = join('etc', 'ssl', 'cert.key')
     ensure_dir_exists(join(root, 'etc', 'ssl'))
-    _save_key(key_path, cert_key)
-    _save_cert(cert_path, cert_crt)
+    _save_key(join(root, key_path), cert_key)
+    _save_cert(join(root, cert_path), cert_crt)
 
     return cert_path, key_path
 
