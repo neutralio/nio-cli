@@ -3,12 +3,12 @@ nio
 
 Usage:
   nio newblock <block-name>
-  nio [options] new <project-name> [(--template <template> | -t <template>) --pubkeeper-hostname=HOST --pubkeeper-token=TOKEN --ssl --no-ssl]
+  nio [options] new <project-name> [(--template <template> | -t <template>) --ip --port --pubkeeper-hostname=HOST --pubkeeper-token=TOKEN --ssl --no-ssl]
   nio [options] add <block-repo>... [(--upgrade | -u)]
   nio [options] (list | ls) services
   nio [options] (list | ls) blocks
   nio [options] (command | co) <command-name> [--args=<args> (<service-name> | <block-name>)]
-  nio [options] (config | cfg) [--pubkeeper-hostname=HOST --pubkeeper-token=TOKEN --ssl]
+  nio [options] (config | cfg) [--ip --port --pubkeeper-hostname=HOST --pubkeeper-token=TOKEN --ssl]
   nio [options] (config | cfg) services <service-name>
   nio [options] (config | cfg) blocks <block-name>
   nio [options] clone services <service-name> <new-name>
@@ -23,13 +23,15 @@ Usage:
   nio --version
 
 Options:
-  -p PORT --port=PORT               Specify nio port.
-  -i IP --ip=IP                     Specify nio ip address.
+  --instance-host=HOST              nio instance host [default: https://localhost:8181]
   --username=USERNAME               Specify username [default: Admin].
   --password=PASSWORD               Specify password [default: Admin].
   --project=PROJECT                 Specify project directory [default: .].
+  --ssl-ca-path=CA_PATH             The path to the CA to use for https requests [default: ~/.nio/ca.crt]
   -h --help                         Show this screen.
   --version                         Show version.
+  -p PORT --port=PORT               DEPRECATED: Specify nio port.
+  -i IP --ip=IP                     DEPRECATED: Specify nio ip address.
 
 Examples:
   nio new my_project -t demo_plant

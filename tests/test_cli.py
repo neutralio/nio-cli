@@ -8,6 +8,7 @@ from collections import OrderedDict
 import sys
 
 import nio_cli.cli as cli
+from nio_cli.commands.base import Base
 from nio.block.terminals import input
 
 try:
@@ -617,22 +618,20 @@ class TestCLI(unittest.TestCase):
                 'pycodestyle .', mock_subprocess_call.call_args_list[0][0][0])
 
             # Check that print statements are run
-            self.assertEqual(
-                'Checking PEP8 formatting ...\n\n'
-                'Checking spec.json formatting ...\n'
-                'Fill in the description for the "prop1" property '
-                'in the nioLmnopio block\n\n'
-                'Checking README.md formatting ...\n'
-                'Add "Outputs" to the nioLmnopio block\n\n'
-                'Checking release.json formatting ...\n\n'
-                'Checking version formatting ...\n'
-                'The nioLmnopio version in the release file does not match '
-                'the version in its block file\n'
-                'Spec.json and release.json versions do not match '
-                'for nioLmnopio block\n\n'
-                'Checking class and file name formatting ...\n\n',
-                mock_print.getvalue()
-            )
+            what_was_printed = mock_print.getvalue()
+            self.assertIn('Checking PEP8 formatting ...', what_was_printed)
+            self.assertIn('Checking spec.json formatting ...', what_was_printed)
+            self.assertIn('Fill in the description for the "prop1" property ', what_was_printed)
+            self.assertIn('in the nioLmnopio block', what_was_printed)
+            self.assertIn('Checking README.md formatting ...', what_was_printed)
+            self.assertIn('Add "Outputs" to the nioLmnopio block', what_was_printed)
+            self.assertIn('Checking release.json formatting ...', what_was_printed)
+            self.assertIn('Checking version formatting ...', what_was_printed)
+            self.assertIn('The nioLmnopio version in the release file does not match ', what_was_printed)
+            self.assertIn('the version in its block file', what_was_printed)
+            self.assertIn('Spec.json and release.json versions do not match ', what_was_printed)
+            self.assertIn('for nioLmnopio block', what_was_printed)
+            self.assertIn('Checking class and file name formatting ...', what_was_printed)
 
     def test_add_user_command(self):
         """ Adds a user through the rest api"""
@@ -723,16 +722,37 @@ class TestCLI(unittest.TestCase):
             self.assertNotIn(username, permissions)
             self.assertEqual(len(permissions), 0)
 
-    def _main(self, command, ip='127.0.0.1', port='8181', **kwargs):
+    def test_cleanup_host(self):
+        cli_command = Base({})
+        self.assertEqual(
+            cli_command._cleanup_host('localhost'),
+            'https://localhost')
+        self.assertEqual(
+            cli_command._cleanup_host('http://localhost'),
+            'http://localhost')
+        self.assertEqual(
+            cli_command._cleanup_host('https://localhost'),
+            'https://localhost')
+        self.assertEqual(
+            cli_command._cleanup_host('https://localhost:8181'),
+            'https://localhost:8181')
+        self.assertEqual(
+            cli_command._cleanup_host('https://localhost:8181/'),
+            'https://localhost:8181')
+
+    def _main(self, command, **kwargs):
         args = {
-            '--ip': ip,
-            '--port': port,
             '--daemon': False,
             '--upgrade': False,
             '-u': False,
             '--template': False,
             '-t': False,
         }
+        if command in ('new', 'config'):
+            args['--ip'] = '127.0.0.1'
+            args['--port'] = '8181'
+        else:
+            args['--instance-host'] = 'http://127.0.0.1:8181'
         args[command] = True
         for k, v in kwargs.items():
             args[k] = v
